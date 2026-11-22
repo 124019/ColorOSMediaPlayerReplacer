@@ -1,0 +1,6 @@
+<!-- res/values/arrays.xml -->
+<resources>
+    <string-array name="xposed_scope">
+        <item>com.coloros.video</item>
+    </string-array>
+</resources>
