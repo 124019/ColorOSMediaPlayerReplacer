@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "xyz.github124019.lockedalbumhook"
+    namespace = "xyz.github124019.cosmediaplayerreplacer"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "xyz.github124019.lockedalbumhook"
+        applicationId = "xyz.github124019.cosmediaplayerreplacer"
         minSdk = 27
         targetSdk = 37
         versionCode = 1

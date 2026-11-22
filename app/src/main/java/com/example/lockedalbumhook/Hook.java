@@ -1,4 +1,4 @@
-package xyz.github124019.lockedalbumhook;
+package xyz.github124019.cosmediaplayerreplacer;
 
 import android.app.Activity;
 import android.content.ClipData;

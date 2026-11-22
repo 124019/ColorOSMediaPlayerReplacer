@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="xyz.github124019.lockedalbumhook">
+    package="xyz.github124019.cosmediaplayerreplacer">
 
     <application
         android:allowBackup="false"
@@ -10,7 +10,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="&#10;&#10;Author: 124019&#10;GitHub: https://github.com/124019&#10;&#10;Redirects videos and audio opened from ColorOS Locked Album / coloros.video to your system default player.&#10;&#10;Requires:&#10;• LSPosed&#10;• Scope: com.coloros.video&#10;• A default video player set in system settings" />
+            android:value="&#10;&#10;Author: 124019&#10;GitHub ONLY: https://github.com/124019/ColorOSMediaPlayerReplacer&#10;&#10;Redirects videos and audio opened from ColorOS Locked Album / com.coloros.video to your system default player.&#10;&#10;Requires:&#10;• LSPosed&#10;• Scope: com.coloros.video&#10;• A default video player set in system settings" />
         <meta-data
             android:name="xposedminversion"
             android:value="93" />
