@@ -3,7 +3,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="Locked Album Hook">
+        android:label="ColorOS Media Player Replacer">
 
         <meta-data
             android:name="xposedmodule"
