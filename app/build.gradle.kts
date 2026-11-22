@@ -10,17 +10,17 @@ val localProps = Properties().apply {
 }
 
 android {
-    namespace = "xyz.github124019.mediaplayerreplacer"
+    namespace = "io.github.befidc124019.mediaplayerreplacer"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "xyz.github124019.mediaplayerreplacer"
+        applicationId = "io.github.befidc124019.mediaplayerreplacer"
         minSdk = 27
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))

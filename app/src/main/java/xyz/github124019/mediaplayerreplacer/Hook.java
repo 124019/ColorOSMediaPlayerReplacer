@@ -1,4 +1,4 @@
-package xyz.github124019.mediaplayerreplacer;
+package io.github.befidc124019.mediaplayerreplacer;
 
 import android.app.Activity;
 import android.content.ClipData;
