@@ -21,6 +21,10 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+
+        ndk {
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))
+        }
     }
 
     signingConfigs {
@@ -48,4 +52,16 @@ android {
 
 dependencies {
     compileOnly("de.robv.android.xposed:api:82")
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val appName = "ColorOSMediaPlayerReplacer"
+            val versionName = output.versionName.orNull ?: "unknown"
+            val buildType = variant.buildType ?: "unknown"
+            @Suppress("UnstableApiUsage")
+            output.outputFileName.set("${appName}_${versionName}_${buildType}.apk")
+        }
+    }
 }
