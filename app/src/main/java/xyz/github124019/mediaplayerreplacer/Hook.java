@@ -1,4 +1,4 @@
-package xyz.github124019.cosmediaplayerreplacer;
+package xyz.github124019.mediaplayerreplacer;
 
 import android.app.Activity;
 import android.content.ClipData;
@@ -23,15 +23,6 @@ public class Hook implements IXposedHookLoadPackage {
             "com.oplus.video.ui.LocalVideoPlayActivity",
             "com.oplus.music.ui.MainActivity"
     };
-
-    // === 默认播放器为空时的 fallback 偏好 ===
-    private static final String FALLBACK_VIDEO_PKG = "dev.anilbeesetti.nextplayer";
-    private static final String FALLBACK_VIDEO_CLS = "dev.anilbeesetti.nextplayer.feature.player.PlayerActivity";
-    private static final String FALLBACK_AUDIO_PKG = null;   // 音乐 fallback 自己填
-    private static final String FALLBACK_AUDIO_CLS = null;
-
-    // 如果 fallback 也拿不到，是否弹 chooser（false = 直接放行进 coloros.video）
-    private static final boolean SHOW_CHOOSER_AS_LAST_RESORT = false;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
@@ -97,7 +88,6 @@ public class Hook implements IXposedHookLoadPackage {
 
         Intent probe = new Intent(Intent.ACTION_VIEW);
         probe.setDataAndType(data, mime);
-        probe.addCategory(Intent.CATEGORY_DEFAULT);
 
         ResolveInfo ri = null;
         try {
@@ -106,54 +96,37 @@ public class Hook implements IXposedHookLoadPackage {
             XposedBridge.log("LockedAlbumHook: [" + tag + "] resolve failed: " + t);
         }
 
-        String defPkg = null;
-        String defCls = null;
-        boolean fromDefault = false;
-
+        // 有非 coloros.video 的默认应用 → 直接转发
         if (ri != null && ri.activityInfo != null
                 && !"android".equals(ri.activityInfo.packageName)
                 && !VIDEO_PKG.equals(ri.activityInfo.packageName)) {
-            defPkg = ri.activityInfo.packageName;
-            defCls = ri.activityInfo.name;
-            fromDefault = true;
+            String defPkg = ri.activityInfo.packageName;
+            String defCls = ri.activityInfo.name;
             XposedBridge.log("LockedAlbumHook: [" + tag + "] default " + category + " = " + defPkg + "/" + defCls);
-        } else {
-            // 默认为空 / Resolver / coloros.video 自身 → 走 fallback
-            String fPkg = "video".equals(category) ? FALLBACK_VIDEO_PKG : FALLBACK_AUDIO_PKG;
-            String fCls = "video".equals(category) ? FALLBACK_VIDEO_CLS : FALLBACK_AUDIO_CLS;
 
-            if (fPkg != null && isPackageInstalled(act, fPkg)) {
-                defPkg = fPkg;
-                defCls = fCls;
-                XposedBridge.log("LockedAlbumHook: [" + tag + "] no default, use fallback " + fPkg);
-            } else {
-                XposedBridge.log("LockedAlbumHook: [" + tag + "] no default & no fallback for " + category);
-                if (SHOW_CHOOSER_AS_LAST_RESORT) {
-                    showChooser(act, probe, data, mime, category, tag);
-                } else {
-                    XposedBridge.log("LockedAlbumHook: [" + tag + "] let coloros.video play it");
-                }
-                return;
+            Intent dst = new Intent(Intent.ACTION_VIEW);
+            dst.setComponent(new ComponentName(defPkg, defCls));
+            dst.setDataAndType(data, mime);
+            dst.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            dst.setClipData(ClipData.newRawUri("", data));
+
+            try {
+                act.startActivity(dst);
+                XposedBridge.log("LockedAlbumHook: [" + tag + "] " + category
+                        + " -> " + defPkg + "/" + defCls + " (default)");
+                act.finish();
+            } catch (Throwable t) {
+                XposedBridge.log("LockedAlbumHook: [" + tag + "] forward failed: " + t);
             }
+            return;
         }
 
-        Intent dst = new Intent(Intent.ACTION_VIEW);
-        dst.setComponent(new ComponentName(defPkg, defCls));
-        dst.setDataAndType(data, mime);
-        dst.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-        dst.setClipData(ClipData.newRawUri("", data));
-
-        try {
-            act.startActivity(dst);
-            XposedBridge.log("LockedAlbumHook: [" + tag + "] " + category
-                    + " -> " + defPkg + "/" + defCls + (fromDefault ? " (default)" : " (fallback)"));
-            act.finish();
-        } catch (Throwable t) {
-            XposedBridge.log("LockedAlbumHook: [" + tag + "] forward failed: " + t);
-        }
+        // 没有默认（Resolver / 系统 / coloros.video 自身）→ 弹 chooser 让用户手动选择
+        XposedBridge.log("LockedAlbumHook: [" + tag + "] no default for " + category + ", show chooser");
+        showChooser(act, probe, data, category, tag);
     }
 
-    private static void showChooser(Activity act, Intent probe, Uri data, String mime, String category, String tag) {
+    private static void showChooser(Activity act, Intent probe, Uri data, String category, String tag) {
         try {
             Intent chooser = Intent.createChooser(probe, "选择" + ("video".equals(category) ? "视频" : "音频") + "播放器");
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -163,15 +136,6 @@ public class Hook implements IXposedHookLoadPackage {
             act.finish();
         } catch (Throwable t) {
             XposedBridge.log("LockedAlbumHook: [" + tag + "] chooser failed: " + t);
-        }
-    }
-
-    private static boolean isPackageInstalled(Activity act, String pkg) {
-        try {
-            act.getPackageManager().getPackageInfo(pkg, 0);
-            return true;
-        } catch (Throwable t) {
-            return false;
         }
     }
 
